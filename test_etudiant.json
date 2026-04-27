@@ -1,0 +1,10 @@
+{
+  "cin": "TEST001",
+  "nom": "Test User",
+  "email": "test@example.com",
+  "dateNaissance": "2000-01-01",
+  "anneePremiereInscription": 2024,
+  "departement": {
+    "id": 1
+  }
+}

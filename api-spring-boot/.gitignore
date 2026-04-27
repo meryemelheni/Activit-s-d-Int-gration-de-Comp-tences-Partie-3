@@ -1,0 +1,60 @@
+# === Spring Boot / Maven ===
+target/
+build/
+*.log
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/
+
+# Exclure les dossiers target dans src
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === IntelliJ IDEA ===
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# === Eclipse / STS ===
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# === NetBeans ===
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# === VS Code ===
+.vscode/
+
+# === Angular / Node.js ===
+node_modules/
+dist/
+.angular/
+.angular-config.json
+
+# === OS / Système ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Logs & Temp ===
+*.log
+*.tmp
+*.swp

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etudiant-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etudiant-service
+  template:
+    metadata:
+      labels:
+        app: etudiant-service
+    spec:
+      containers:
+        - name: etudiant-service
+          image: maryemelheni/etudiant-service:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name:   SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/etudiantsdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etudiant-service
+spec:
+  selector:
+    app: etudiant-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort

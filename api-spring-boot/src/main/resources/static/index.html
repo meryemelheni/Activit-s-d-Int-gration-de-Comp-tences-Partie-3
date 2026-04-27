@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Étudiants</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #667eea;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #764ba2;
+        }
+        .btn-danger {
+            background: #ff6b6b;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9em;
+            margin: 2px;
+            display: inline-block;
+        }
+        .action-cell {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Gestion des Étudiants</h1>
+            <p>Plateforme de gestion des étudiants et départements</p>
+        </header>
+        
+        <div class="content">
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <h3 id="studentCount">0</h3>
+                    <p>Étudiants</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="departmentCount">0</h3>
+                    <p>Départements</p>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('students')">👥 Étudiants</button>
+                <button class="tab-btn" onclick="switchTab('departments')">🏢 Départements</button>
+            </div>
+
+            <!-- Tab Étudiants -->
+            <div id="students" class="tab-content active">
+                <div id="studentError" class="error" style="display:none;"></div>
+                <div id="studentSuccess" class="success" style="display:none;"></div>
+                
+                <h2>Ajouter un Nouvel Étudiant</h2>
+                <form id="studentForm" onsubmit="addStudent(event)" style="margin-bottom: 30px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>CIN *</label>
+                            <input type="text" id="cin" required placeholder="ex: CIN001">
+                        </div>
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" id="nom" required placeholder="ex: Dupont">
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email" required placeholder="ex: dupont@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Date de Naissance *</label>
+                            <input type="date" id="dateNaissance" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Année d'Inscription *</label>
+                            <input type="number" id="anneeInscription" required placeholder="ex: 2023">
+                        </div>
+                        <div class="form-group">
+                            <label>Département *</label>
+                            <select id="departmentSelect" required>
+                                <option value="">-- Sélectionner un département --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 15px;">➕ Ajouter Étudiant</button>
+                </form>
+
+                <h2>Liste des Étudiants</h2>
+                <div class="loading" id="studentLoading">Chargement des données...</div>
+                <table id="studentTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>CIN</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Date de Naissance</th>
+                            <th>Année</th>
+                            <th>Département</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tab Départements -->
+            <div id="departments" class="tab-content">
+                <div id="deptError" class="error" style="display:none;"></div>
+                <div id="deptSuccess" class="success" style="display:none;"></div>
+                
+                <h2>Liste des Départements</h2>
+                <div class="loading" id="deptLoading">Chargement des données...</div>
+                <table id="deptTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deptTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingStudentId = null;
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load data if not already loaded
+            if (tabName === 'students' && !window.studentsLoaded) {
+                loadStudents();
+            } else if (tabName === 'departments' && !window.departmentsLoaded) {
+                loadDepartments();
+            }
+        }
+
+        function showMessage(type, message) {
+            if (type === 'error') {
+                document.getElementById('studentError').textContent = message;
+                document.getElementById('studentError').style.display = 'block';
+                setTimeout(() => document.getElementById('studentError').style.display = 'none', 5000);
+            } else {
+                document.getElementById('studentSuccess').textContent = message;
+                document.getElementById('studentSuccess').style.display = 'block';
+                setTimeout(() => document.getElementById('studentSuccess').style.display = 'none', 5000);
+            }
+        }
+
+        function loadDepartmentsForSelect() {
+            fetch('/api/departements')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('departmentSelect');
+                    data.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept.id;
+                        option.textContent = dept.nom;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading departments:', error));
+        }
+
+        function addStudent(event) {
+            event.preventDefault();
+
+            const studentData = {
+                cin: document.getElementById('cin').value,
+                nom: document.getElementById('nom').value,
+                email: document.getElementById('email').value,
+                dateNaissance: document.getElementById('dateNaissance').value,
+                anneePremiereInscription: parseInt(document.getElementById('anneeInscription').value),
+                departement: {
+                    id: parseInt(document.getElementById('departmentSelect').value)
+                }
+            };
+
+            const method = editingStudentId ? 'PUT' : 'POST';
+            const url = editingStudentId ? `/api/etudiants/${editingStudentId}` : '/api/etudiants';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
+                return response.json();
+            })
+            .then(data => {
+                const message = editingStudentId ? 'Étudiant modifié avec succès!' : 'Étudiant ajouté avec succès!';
+                showMessage('success', message);
+                document.getElementById('studentForm').reset();
+                editingStudentId = null;
+                document.querySelector('button[type="submit"]').textContent = '➕ Ajouter Étudiant';
+                loadStudents();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Erreur lors de la sauvegarde');
+            });
+        }
+
+        function editStudent(id) {
+            fetch(`/api/etudiants/${id}`)
+                .then(response => response.json())
+                .then(student => {
+                    document.getElementById('cin').value = student.cin;
+                    document.getElementById('nom').value = student.nom;
+                    document.getElementById('email').value = student.email;
+                    document.getElementById('dateNaissance').value = student.dateNaissance;
+                    document.getElementById('anneeInscription').value = student.anneePremiereInscription;
+                    document.getElementById('departmentSelect').value = student.departement.id;
+                    
+                    editingStudentId = id;
+                    document.querySelector('button[type="submit"]').textContent = '✏️ Modifier Étudiant';
+                    window.scrollTo(0, 0);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('error', 'Erreur lors du chargement de l\'étudiant');
+                });
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet étudiant?')) {
+                fetch(`/api/etudiants/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Erreur lors de la suppression');
+                    showMessage('success', 'Étudiant supprimé avec succès!');
+                    loadStudents();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('error', 'Erreur lors de la suppression');
+                });
+            }
+        }
+
+        function loadStudents() {
+            const loading = document.getElementById('studentLoading');
+            const table = document.getElementById('studentTable');
+            const tbody = document.getElementById('studentTableBody');
+            const errorDiv = document.getElementById('studentError');
+
+            loading.style.display = 'block';
+            table.style.display = 'none';
+
+            fetch('/api/etudiants')
+                .then(response => response.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    data.forEach(student => {
+                        const row = `
+                            <tr>
+                                <td>${student.id}</td>
+                                <td>${student.cin}</td>
+                                <td>${student.nom}</td>
+                                <td>${student.email || '-'}</td>
+                                <td>${student.dateNaissance || '-'}</td>
+                                <td>${student.anneePremiereInscription || '-'}</td>
+                                <td>${student.departement ? student.departement.nom : '-'}</td>
+                                <td class="action-cell">
+                                    <button class="btn btn-small" onclick="editStudent(${student.id})">✏️ Modifier</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteStudent(${student.id})">🗑️ Supprimer</button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                    document.getElementById('studentCount').textContent = data.length;
+                    loading.style.display = 'none';
+                    table.style.display = 'table';
+                    errorDiv.style.display = 'none';
+                    window.studentsLoaded = true;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorDiv.textContent = 'Erreur lors du chargement des étudiants';
+                    errorDiv.style.display = 'block';
+                    loading.style.display = 'none';
+                });
+        }
+
+        function loadDepartments() {
+            const loading = document.getElementById('deptLoading');
+            const table = document.getElementById('deptTable');
+            const tbody = document.getElementById('deptTableBody');
+            const errorDiv = document.getElementById('deptError');
+
+            loading.style.display = 'block';
+            table.style.display = 'none';
+
+            fetch('/api/departements')
+                .then(response => response.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    data.forEach(dept => {
+                        const row = `
+                            <tr>
+                                <td>${dept.id}</td>
+                                <td>${dept.nom}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                    document.getElementById('departmentCount').textContent = data.length;
+                    loading.style.display = 'none';
+                    table.style.display = 'table';
+                    errorDiv.style.display = 'none';
+                    window.departmentsLoaded = true;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorDiv.textContent = 'Erreur lors du chargement des départements';
+                    errorDiv.style.display = 'block';
+                    loading.style.display = 'none';
+                });
+        }
+
+        // Load students and departments on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadDepartmentsForSelect();
+            loadStudents();
+        });
+    </script>
+</body>
+</html>
