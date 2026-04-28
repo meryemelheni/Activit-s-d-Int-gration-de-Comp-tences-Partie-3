@@ -46,7 +46,7 @@ docker compose up --build
 | Etudiant Swagger | http://localhost:8081/swagger-ui/index.html |
 | Grading Swagger | http://localhost:8082/swagger-ui/index.html |
 | API Gateway | http://localhost:8090 |
-| Frontend | http://localhost:3000 |
+| Frontend | http://localhost:3001 |
 
 ## Endpoints API
 
